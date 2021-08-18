@@ -7,14 +7,20 @@ import sys
 
 if __name__ == "__main__":
 
+    if "-inputFilePath" in sys.argv:
+        inputFilePath = sys.argv[sys.argv.index("-inputFilePath") + 1]
+    else:
+        print("No input file")
+        sys.exit()
+
     if "-filePath" in sys.argv:
-        filePath = sys.argv[sys.argv.index("-filePath") + 1]
+        outputFilePath = sys.argv[sys.argv.index("-outputFilePath") + 1]
     else:
         print("No input file")
         sys.exit()
 
     # Read in Image, Grayscale and Blur
-    img = cv2.imread(filePath)
+    img = cv2.imread(inputFilePath)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     # Apply filter and find edges for localization
@@ -52,4 +58,4 @@ if __name__ == "__main__":
     font = cv2.FONT_HERSHEY_SIMPLEX
     res = cv2.rectangle(img, tuple(approx[0][0]), tuple(approx[2][0]), (0, 255, 0), 3)
 
-    img.save("result.jpg")
+    img.save(outputFilePath)
