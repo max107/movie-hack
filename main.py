@@ -13,10 +13,10 @@ if __name__ == "__main__":
         print("No input file")
         sys.exit()
 
-    if "-filePath" in sys.argv:
+    if "-outputFilePath" in sys.argv:
         outputFilePath = sys.argv[sys.argv.index("-outputFilePath") + 1]
     else:
-        print("No input file")
+        print("No output file")
         sys.exit()
 
     # Read in Image, Grayscale and Blur
