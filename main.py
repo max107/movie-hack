@@ -52,4 +52,4 @@ if __name__ == "__main__":
     font = cv2.FONT_HERSHEY_SIMPLEX
     res = cv2.rectangle(img, tuple(approx[0][0]), tuple(approx[2][0]), (0, 255, 0), 3)
 
-    res.save("result.jpg")
+    img.save("result.jpg")
