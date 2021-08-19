@@ -70,7 +70,7 @@ def postprocess(frame, outs):
         top = box[1]
         width = box[2]
         height = box[3]
-        drawPred(left, top, left + width, top + height)
+        # drawPred(left, top, left + width, top + height)
         blurRegion(left, top, width, height)
 
 
