@@ -10,7 +10,7 @@ import os.path
 def blurRegion(x, y, w, h):
     # Grab ROI with Numpy slicing and blur
     ROI = frame[y:y + h, x:x + w]
-    blur = cv2.GaussianBlur(ROI, (51, 51), 0)
+    blur = cv.GaussianBlur(ROI, (51, 51), 0)
 
     # Insert ROI back into image
     frame[y:y + h, x:x + w] = blur
