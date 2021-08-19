@@ -6,12 +6,14 @@ import sys
 import numpy as np
 import os.path
 
+
 # Get the names of the output layers
 def getOutputsNames(net):
     # Get the names of all the layers in the network
     layersNames = net.getLayerNames()
     # Get the names of the output layers, i.e. the layers with unconnected outputs
     return [layersNames[i[0] - 1] for i in net.getUnconnectedOutLayers()]
+
 
 # Draw the predicted bounding box
 def drawPred(classId, conf, left, top, right, bottom):
@@ -23,17 +25,16 @@ def drawPred(classId, conf, left, top, right, bottom):
 
     # Get the label for the class name and its confidence
     if classes:
-        assert(classId < len(classes))
+        assert (classId < len(classes))
         label = '%s: %s' % (classes[classId], label)
 
     # Display the label at the top of the bounding box
-    labelSize, baseLine = cv.getTextSize(
-        label, cv.FONT_HERSHEY_SIMPLEX, 0.5, 1)
-    top = max(top, labelSize[1])
-    cv.rectangle(frame, (left, top - round(1.5*labelSize[1])), (left + round(
-        1.5*labelSize[0]), top + baseLine), (255, 0, 255), cv.FILLED)
-    #cv.rectangle(frame, (left, top - round(1.5*labelSize[1])), (left + round(1.5*labelSize[0]), top + baseLine),    (255, 255, 255), cv.FILLED)
-    cv.putText(frame, label, (left, top), cv.FONT_HERSHEY_SIMPLEX, 0.70, (255, 255, 255), 2)
+    # labelSize, baseLine = cv.getTextSize( label, cv.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+    # top = max(top, labelSize[1])
+    # cv.rectangle(frame, (left, top - round(1.5 * labelSize[1])), (left + round(1.5 * labelSize[0]), top + baseLine), (255, 0, 255), cv.FILLED)
+    # cv.rectangle(frame, (left, top - round(1.5*labelSize[1])), (left + round(1.5*labelSize[0]), top + baseLine),    (255, 255, 255), cv.FILLED)
+    # cv.putText(frame, label, (left, top), cv.FONT_HERSHEY_SIMPLEX, 0.70, (255, 255, 255), 2)
+
 
 # Remove the bounding boxes with low confidence using non-maxima suppression
 def postprocess(frame, outs):
@@ -84,6 +85,7 @@ def postprocess(frame, outs):
         drawPred(classIds[i], confidences[i], left,
                  top, left + width, top + height)
 
+
 if __name__ == "__main__":
     # Initialize the parameters
     confThreshold = 0.5  # Confidence threshold
@@ -112,16 +114,13 @@ if __name__ == "__main__":
     net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
 
     # Process inputs
-    winName = 'Deep learning object detection in OpenCV'
-    cv.namedWindow(winName, cv.WINDOW_NORMAL)
-
     outputFile = "result.jpg"
     if (args.inputFilePath):
         # Open the image file
         if not os.path.isfile(args.inputFilePath):
             print("Input image file ", args.inputFilePath, " doesn't exist")
             sys.exit(1)
-        cap = cv.VideoCapture(args.image)
+        cap = cv.VideoCapture(args.inputFilePath)
 
     while cv.waitKey(1) < 0:
 
@@ -155,5 +154,3 @@ if __name__ == "__main__":
         # Write the frame with the detection boxes
         if (args.inputFilePath):
             cv.imwrite(outputFile, frame.astype(np.uint8))
-
-
