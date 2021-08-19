@@ -15,8 +15,8 @@ inpHeight = 416  # 608     # Height of network's input image
 
 parser = argparse.ArgumentParser(
     description='Object Detection using YOLO in OPENCV')
-parser.add_argument('--image', help='Path to image file.')
-parser.add_argument('--video', help='Path to video file.')
+parser.add_argument('--inputFilePath', help='Path to image file.')
+parser.add_argument('--modelPath', help='Path to image file.')
 args = parser.parse_args()
 
 # Load names of classes
@@ -29,7 +29,7 @@ with open(classesFile, 'rt') as f:
 # Give the configuration and weight files for the model and load the network using them.
 
 modelConfiguration = "darknet-yolov3.cfg"
-modelWeights = "model.weights"
+modelWeights = args.modelPath
 
 net = cv.dnn.readNetFromDarknet(modelConfiguration, modelWeights)
 net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
@@ -125,14 +125,13 @@ def postprocess(frame, outs):
 winName = 'Deep learning object detection in OpenCV'
 cv.namedWindow(winName, cv.WINDOW_NORMAL)
 
-outputFile = "yolo_out_py.avi"
-if (args.image):
+outputFile = "result.jpg"
+if (args.inputFilePath):
     # Open the image file
-    if not os.path.isfile(args.image):
-        print("Input image file ", args.image, " doesn't exist")
+    if not os.path.isfile(args.inputFilePath):
+        print("Input image file ", args.inputFilePath, " doesn't exist")
         sys.exit(1)
     cap = cv.VideoCapture(args.image)
-    outputFile = args.image[:-4]+'_yolo_out_py.jpg'
 
 while cv.waitKey(1) < 0:
 
@@ -165,7 +164,7 @@ while cv.waitKey(1) < 0:
     #cv.putText(frame, label, (0, 15), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255))
 
     # Write the frame with the detection boxes
-    if (args.image):
+    if (args.inputFilePath):
         cv.imwrite(outputFile, frame.astype(np.uint8))
     else:
         vid_writer.write(frame.astype(np.uint8))
