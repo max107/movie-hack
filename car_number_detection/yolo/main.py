@@ -6,6 +6,14 @@ import sys
 import numpy as np
 import os.path
 
+# Blur https://stackoverflow.com/questions/24195138/gaussian-blurring-with-opencv-only-blurring-a-subregion-of-an-image
+def blurRegion(x, y, w, h):
+    # Grab ROI with Numpy slicing and blur
+    ROI = frame[y:y + h, x:x + w]
+    blur = cv2.GaussianBlur(ROI, (51, 51), 0)
+
+    # Insert ROI back into image
+    frame[y:y + h, x:x + w] = blur
 
 # Get the names of the output layers
 def getOutputsNames(net):
@@ -14,26 +22,9 @@ def getOutputsNames(net):
     # Get the names of the output layers, i.e. the layers with unconnected outputs
     return [layersNames[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 
-
 # Draw the predicted bounding box
-def drawPred(classId, conf, left, top, right, bottom):
-    # Draw a bounding box.
-    #    cv.rectangle(frame, (left, top), (right, bottom), (255, 178, 50), 3)
+def drawPred(left, top, right, bottom):
     cv.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 3)
-
-    # label = '%.2f' % conf
-
-    # Get the label for the class name and its confidence
-    # if classes:
-    #    assert (classId < len(classes))
-    #    label = '%s: %s' % (classes[classId], label)
-
-    # Display the label at the top of the bounding box
-    # labelSize, baseLine = cv.getTextSize( label, cv.FONT_HERSHEY_SIMPLEX, 0.5, 1)
-    # top = max(top, labelSize[1])
-    # cv.rectangle(frame, (left, top - round(1.5 * labelSize[1])), (left + round(1.5 * labelSize[0]), top + baseLine), (255, 0, 255), cv.FILLED)
-    # cv.rectangle(frame, (left, top - round(1.5*labelSize[1])), (left + round(1.5*labelSize[0]), top + baseLine),    (255, 255, 255), cv.FILLED)
-    # cv.putText(frame, label, (left, top), cv.FONT_HERSHEY_SIMPLEX, 0.70, (255, 255, 255), 2)
 
 
 # Remove the bounding boxes with low confidence using non-maxima suppression
@@ -41,9 +32,6 @@ def postprocess(frame, outs):
     frameHeight = frame.shape[0]
     frameWidth = frame.shape[1]
 
-    classIds = []
-    confidences = []
-    boxes = []
     # Scan through all the bounding boxes output from the network and keep only the
     # ones with high confidence scores. Assign the box's class label as the class with the highest score.
     classIds = []
@@ -82,7 +70,8 @@ def postprocess(frame, outs):
         top = box[1]
         width = box[2]
         height = box[3]
-        drawPred(classIds[i], confidences[i], left, top, left + width, top + height)
+        drawPred(left, top, left + width, top + height)
+        blurRegion(left, top, width, height)
 
 
 if __name__ == "__main__":
@@ -98,12 +87,6 @@ if __name__ == "__main__":
     parser.add_argument('--modelPath', help='Path to image file.')
     args = parser.parse_args()
 
-    # Load names of classes
-    classesFile = "classes.names"
-    classes = None
-    with open(classesFile, 'rt') as f:
-        classes = f.read().rstrip('\n').split('\n')
-
     # Give the configuration and weight files for the model and load the network using them.
     modelConfiguration = "darknet-yolov3.cfg"
     modelWeights = args.modelPath
@@ -114,7 +97,7 @@ if __name__ == "__main__":
 
     # Process inputs
     outputFile = "result.jpg"
-    if (args.inputFilePath):
+    if args.inputFilePath:
         # Open the image file
         if not os.path.isfile(args.inputFilePath):
             print("Input image file ", args.inputFilePath, " doesn't exist")
@@ -148,8 +131,7 @@ if __name__ == "__main__":
         # Put efficiency information. The function getPerfProfile returns the overall time for inference(t) and the timings for each of the layers(in layersTimes)
         t, _ = net.getPerfProfile()
         label = 'Inference time: %.2f ms' % (t * 1000.0 / cv.getTickFrequency())
-        # cv.putText(frame, label, (0, 15), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255))
 
         # Write the frame with the detection boxes
-        if (args.inputFilePath):
+        if args.inputFilePath:
             cv.imwrite(outputFile, frame.astype(np.uint8))
