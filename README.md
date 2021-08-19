@@ -4,4 +4,5 @@
 
 # Comands
 
-- ./car_number_detection/opencv/main.py -outputFilePath result.jpg -inputFilePath image1.jpg
+- ./car_number_detection/opencv/main.py -outputFilePath result.jpg -inputFilePath image.jpg
+- ./car_number_detection/yolo/main.py --inputFilePath image.jpg --modelPath model.weights
