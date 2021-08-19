@@ -21,19 +21,19 @@ def drawPred(classId, conf, left, top, right, bottom):
     #    cv.rectangle(frame, (left, top), (right, bottom), (255, 178, 50), 3)
     cv.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 3)
 
-    label = '%.2f' % conf
+    # label = '%.2f' % conf
 
     # Get the label for the class name and its confidence
-    if classes:
-        assert (classId < len(classes))
-        label = '%s: %s' % (classes[classId], label)
+    # if classes:
+    #    assert (classId < len(classes))
+    #    label = '%s: %s' % (classes[classId], label)
 
     # Display the label at the top of the bounding box
-    labelSize, baseLine = cv.getTextSize( label, cv.FONT_HERSHEY_SIMPLEX, 0.5, 1)
-    top = max(top, labelSize[1])
-    cv.rectangle(frame, (left, top - round(1.5 * labelSize[1])), (left + round(1.5 * labelSize[0]), top + baseLine), (255, 0, 255), cv.FILLED)
+    # labelSize, baseLine = cv.getTextSize( label, cv.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+    # top = max(top, labelSize[1])
+    # cv.rectangle(frame, (left, top - round(1.5 * labelSize[1])), (left + round(1.5 * labelSize[0]), top + baseLine), (255, 0, 255), cv.FILLED)
     # cv.rectangle(frame, (left, top - round(1.5*labelSize[1])), (left + round(1.5*labelSize[0]), top + baseLine),    (255, 255, 255), cv.FILLED)
-    cv.putText(frame, label, (left, top), cv.FONT_HERSHEY_SIMPLEX, 0.70, (255, 255, 255), 2)
+    # cv.putText(frame, label, (left, top), cv.FONT_HERSHEY_SIMPLEX, 0.70, (255, 255, 255), 2)
 
 
 # Remove the bounding boxes with low confidence using non-maxima suppression
@@ -82,7 +82,7 @@ def postprocess(frame, outs):
         top = box[1]
         width = box[2]
         height = box[3]
-        # drawPred(classIds[i], confidences[i], left, top, left + width, top + height)
+        drawPred(classIds[i], confidences[i], left, top, left + width, top + height)
 
 
 if __name__ == "__main__":
