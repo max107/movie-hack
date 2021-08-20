@@ -7,14 +7,20 @@ import sys
 
 if __name__ == "__main__":
 
-    if "-filePath" in sys.argv:
-        filePath = sys.argv[sys.argv.index("-filePath") + 1]
+    if "-inputFilePath" in sys.argv:
+        inputFilePath = sys.argv[sys.argv.index("-inputFilePath") + 1]
     else:
         print("No input file")
         sys.exit()
 
+    if "-outputFilePath" in sys.argv:
+        outputFilePath = sys.argv[sys.argv.index("-outputFilePath") + 1]
+    else:
+        print("No output file")
+        sys.exit()
+
     # Read in Image, Grayscale and Blur
-    img = cv2.imread(filePath)
+    img = cv2.imread(inputFilePath)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     # Apply filter and find edges for localization
@@ -45,12 +51,11 @@ if __name__ == "__main__":
     # Use Easy OCR To Read Text
     reader = easyocr.Reader(['en'])
     result = reader.readtext(cropped_image)
-    print(result)
 
     # Render Result
     text = result[0][-2]
+    print(text)
     font = cv2.FONT_HERSHEY_SIMPLEX
-    res = cv2.putText(img, text=text, org=(approx[0][0][0], approx[1][0][1] + 60), fontFace=font, fontScale=1,
-                      color=(0, 255, 0), thickness=2, lineType=cv2.LINE_AA)
     res = cv2.rectangle(img, tuple(approx[0][0]), tuple(approx[2][0]), (0, 255, 0), 3)
-    plt.imshow(cv2.cvtColor(res, cv2.COLOR_BGR2RGB))
+
+    cv2.imwrite(outputFilePath, img)
