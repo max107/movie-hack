@@ -45,8 +45,7 @@ def postprocess(frame, outs):
             # if scores[classId]>confThreshold:
             confidence = scores[classId]
             if detection[4] > confThreshold:
-                print(detection[4], " - ", scores[classId],
-                      " - th : ", confThreshold)
+                print(detection[4], " - ", scores[classId], " - th : ", confThreshold)
                 print(detection)
             if confidence > confThreshold:
                 center_x = int(detection[0] * frameWidth)
