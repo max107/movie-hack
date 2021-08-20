@@ -148,5 +148,7 @@ if __name__ == "__main__":
         label = 'Inference time: %.2f ms' % (t * 1000.0 / cv.getTickFrequency())
 
         # Write the frame with the detection boxes
-        if args.inputFilePath:
+        if args.inputImagePath:
             cv.imwrite(outputFile, frame.astype(np.uint8))
+        else:
+            vid_writer.write(frame.astype(np.uint8))
