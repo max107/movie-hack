@@ -26,7 +26,6 @@ def getOutputsNames(net):
 def drawPred(left, top, right, bottom):
     cv.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 3)
 
-
 # Remove the bounding boxes with low confidence using non-maxima suppression
 def postprocess(frame, outs):
     frameHeight = frame.shape[0]
@@ -73,7 +72,6 @@ def postprocess(frame, outs):
         # drawPred(left, top, left + width, top + height)
         blurRegion(left, top, width, height)
 
-
 if __name__ == "__main__":
     # Initialize the parameters
     confThreshold = 0.5  # Confidence threshold
@@ -83,7 +81,8 @@ if __name__ == "__main__":
     inpHeight = 416  # 608     # Height of network's input image
 
     parser = argparse.ArgumentParser(description='Object Detection using YOLO in OPENCV')
-    parser.add_argument('--inputFilePath', help='Path to image file.')
+    parser.add_argument('--inputImagePath', help='Path to image file.')
+    parser.add_argument('--inputVideoPath', help='Path to video file.')
     parser.add_argument('--modelPath', help='Path to image file.')
     args = parser.parse_args()
 
@@ -96,13 +95,29 @@ if __name__ == "__main__":
     net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
 
     # Process inputs
-    outputFile = "result.jpg"
-    if args.inputFilePath:
+    outputFile = ""
+    if args.inputImagePath:
         # Open the image file
-        if not os.path.isfile(args.inputFilePath):
+        if not os.path.isfile(args.inputImagePath):
             print("Input image file ", args.inputFilePath, " doesn't exist")
             sys.exit(1)
-        cap = cv.VideoCapture(args.inputFilePath)
+        cap = cv.VideoCapture(args.inputImagePath)
+        outputFile = "result.jpg"
+    elif args.inputVideoPath:
+        if not os.path.isfile(args.inputVideoPath):
+            print("Input video file ", args.inputVideoPath, " doesn't exist")
+            sys.exit(1)
+        cap = cv.VideoCapture(args.inputVideoPath)
+        outputFile = 'result.avi'
+    else:
+        print("No input file specified")
+        sys.exit(1)
+
+    # Get the video writer initialized to save the output video
+    if args.inputVideoPath:
+        vid_writer = cv.VideoWriter(outputFile, cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30, (round(
+            cap.get(cv.CAP_PROP_FRAME_WIDTH)), round(cap.get(cv.CAP_PROP_FRAME_HEIGHT))))
+
 
     while cv.waitKey(1) < 0:
 
@@ -111,7 +126,7 @@ if __name__ == "__main__":
 
         # Stop the program if reached end of video
         if not hasFrame:
-            print("Done processing !!!")
+            print("Done processing.")
             print("Output file is stored as ", outputFile)
             cv.waitKey(3000)
             break
