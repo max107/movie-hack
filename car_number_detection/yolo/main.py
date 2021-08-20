@@ -83,6 +83,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Object Detection using YOLO in OPENCV')
     parser.add_argument('--inputImagePath', help='Path to image file.')
     parser.add_argument('--inputVideoPath', help='Path to video file.')
+    parser.add_argument('--outputFilePath', help='Path to video file.')
     parser.add_argument('--modelPath', help='Path to image file.')
     args = parser.parse_args()
 
@@ -96,19 +97,23 @@ if __name__ == "__main__":
 
     # Process inputs
     outputFile = ""
+    if not args.outputFilePath:
+        print("Output file path is not specified")
+        sys.exit(1)
+    else:
+        outputFile = args.outputFilePath
+
     if args.inputImagePath:
         # Open the image file
         if not os.path.isfile(args.inputImagePath):
             print("Input image file ", args.inputFilePath, " doesn't exist")
             sys.exit(1)
         cap = cv.VideoCapture(args.inputImagePath)
-        outputFile = "result.jpg"
     elif args.inputVideoPath:
         if not os.path.isfile(args.inputVideoPath):
             print("Input video file ", args.inputVideoPath, " doesn't exist")
             sys.exit(1)
         cap = cv.VideoCapture(args.inputVideoPath)
-        outputFile = 'result.mp4'
     else:
         print("No input file specified")
         sys.exit(1)
