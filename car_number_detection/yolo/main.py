@@ -119,7 +119,7 @@ if __name__ == "__main__":
 
     # Get the video writer initialized to save the output video
     if args.inputVideoPath:
-        vid_writer = cv.VideoWriter(outputFile, cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30, (round(
+        vid_writer = cv.VideoWriter(outputFile, cv.VideoWriter_fourcc(*'MP4V'), 30, (round(
             cap.get(cv.CAP_PROP_FRAME_WIDTH)), round(cap.get(cv.CAP_PROP_FRAME_HEIGHT))))
 
 
