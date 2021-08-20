@@ -108,7 +108,7 @@ if __name__ == "__main__":
             print("Input video file ", args.inputVideoPath, " doesn't exist")
             sys.exit(1)
         cap = cv.VideoCapture(args.inputVideoPath)
-        outputFile = 'result.avi'
+        outputFile = 'result.mp4'
     else:
         print("No input file specified")
         sys.exit(1)
@@ -150,5 +150,5 @@ if __name__ == "__main__":
         # Write the frame with the detection boxes
         if args.inputImagePath:
             cv.imwrite(outputFile, frame.astype(np.uint8))
-        else:
+        elif args.inputVideoPath:
             vid_writer.write(frame.astype(np.uint8))
