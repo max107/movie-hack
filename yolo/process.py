@@ -65,8 +65,6 @@ def postprocess(frame, outs, confThreshold, nmsThreshold):
             # if scores[classId]>confThreshold:
             confidence = scores[classId]
             if detection[4] > confThreshold:
-                log.info(detection[4], " - ", scores[classId],
-                         " - th : ", confThreshold)
                 log.info(detection)
             if confidence > confThreshold:
                 center_x = int(detection[0] * frameWidth)
@@ -120,34 +118,31 @@ def process(video_path, dst, model_path):
     vid_writer = cv.VideoWriter(outputFile, cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30, (round(
         cap.get(cv.CAP_PROP_FRAME_WIDTH)), round(cap.get(cv.CAP_PROP_FRAME_HEIGHT))))  # TODO Upload
 
-    while cv.waitKey(1) < 0:
-        # get frame from the video
-        hasFrame, frame = cap.read()
+    # get frame from the video
+    hasFrame, frame = cap.read()
 
-        # Stop the program if reached end of video
-        if not hasFrame:
-            log.info("Done processing. Output file is stored as %s" %
-                     outputFile)
-            cv.waitKey(3000)
-            break
+    # Stop the program if reached end of video
+    if not hasFrame:
+        log.info("Done processing. Output file is stored as %s" %
+                 outputFile)
 
-        # Create a 4D blob from a frame.
-        blob = cv.dnn.blobFromImage(
-            frame, 1 / 255, (inpWidth, inpHeight), [0, 0, 0], 1, crop=False)
+    # Create a 4D blob from a frame.
+    blob = cv.dnn.blobFromImage(
+        frame, 1 / 255, (inpWidth, inpHeight), [0, 0, 0], 1, crop=False)
 
-        # Sets the input to the network
-        net.setInput(blob)
+    # Sets the input to the network
+    net.setInput(blob)
 
-        # Runs the forward pass to get output of the output layers
-        outs = net.forward(getOutputsNames(net))
+    # Runs the forward pass to get output of the output layers
+    outs = net.forward(getOutputsNames(net))
 
-        # Remove the bounding boxes with low confidence
-        postprocess(
-            frame,
-            outs,
-            confThreshold,
-            nmsThreshold
-        )
+    # Remove the bounding boxes with low confidence
+    postprocess(
+        frame,
+        outs,
+        confThreshold,
+        nmsThreshold
+    )
 
-        # Write the frame with the detection boxes
-        vid_writer.write(frame.astype(np.uint8))
+    # Write the frame with the detection boxes
+    vid_writer.write(frame.astype(np.uint8))
