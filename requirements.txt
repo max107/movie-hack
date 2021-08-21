@@ -1,0 +1,5 @@
+awscli
+opencv-python-headless
+numpy<1.19.0
+boto3
+python-json-logger==2.0.1

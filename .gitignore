@@ -2,3 +2,5 @@
 venv/
 *.avi
 model.weights
+/data
+__pycache__
