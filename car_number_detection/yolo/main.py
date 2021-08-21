@@ -74,9 +74,9 @@ class DownloadManager:
 
 
 download_manager = DownloadManager(
-    bucket_name="hack0820",
-    aws_access_key_id="AKIAU7XZOMYFZK54A5UD",
-    aws_secret_access_key="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",
+    bucket_name=os.environ.get("AWS_BUCKET_NAME"),
+    aws_access_key_id=os.environ.get("AWS_ACCESS_KEY"),
+    aws_secret_access_key=os.environ.get("AWS_SECRET_KEY"),
     region_name="eu-central-1",
 )
 
