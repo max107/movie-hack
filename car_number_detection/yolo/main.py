@@ -74,10 +74,10 @@ def postprocess(frame, outs):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Object Detection using YOLO in OPENCV')
-    parser.add_argument('--inputImagePath', help='Path to image file.')
     parser.add_argument('--inputVideoPath', help='Path to video file.') # TODO download
     parser.add_argument('--outputFilePath', help='Path to video file.') # TODO upload
     parser.add_argument('--modelPath', help='Path to image file.') # TODO download from hack0820 -> model.weights
+    parser.add_argument('--inputImagePath', help='Path to image file.')
     args = parser.parse_args()
 
     # Initialize the parameters
@@ -90,18 +90,16 @@ if __name__ == "__main__":
     # Give the configuration and weight files for the model and load the network using them.
     modelConfiguration = "darknet-yolov3.cfg"
     modelWeights = args.modelPath
+    outputFile = "result.avi"
 
     net = cv.dnn.readNetFromDarknet(modelConfiguration, modelWeights)
     net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
     net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
 
     # Process inputs
-    outputFile = ""
     if not args.outputFilePath:
         print("Output file path is not specified")
         sys.exit(1)
-    else:
-        outputFile = args.outputFilePath
 
     if args.inputImagePath:
         # Open the image file
@@ -155,4 +153,6 @@ if __name__ == "__main__":
         if args.inputImagePath:
             cv.imwrite(outputFile, frame.astype(np.uint8))
         elif args.inputVideoPath:
-            vid_writer.write(frame.astype(np.uint8)) # TODO upload
+            vid_writer.write(frame.astype(np.uint8))
+
+    # TODO upload to s3, local file path == outputFile
