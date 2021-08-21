@@ -6,12 +6,77 @@ import sys
 import tempfile
 import numpy as np
 import os.path
-from .sync import DownloadManager
+from typing import List
+import logging
+import os
+from awscli.clidriver import create_clidriver
+
+log = logging.getLogger()
+
+
+def aws_cli(envs: dict, cmd: List[str]):
+    old_env = dict(os.environ)
+    try:
+        # Environment
+        env = os.environ.copy()
+        env['LC_CTYPE'] = u'en_US.UTF'
+        for k, v in envs.items():
+            env[k] = v
+        os.environ.update(env)
+
+        # Run awscli in the same process
+        exit_code = create_clidriver().main(args=cmd)
+
+        # Deal with problems
+        if exit_code > 0:
+            raise RuntimeError('AWS CLI exited with code {}'.format(exit_code))
+    finally:
+        os.environ.clear()
+        os.environ.update(old_env)
+
+
+class DownloadManager:
+    def __init__(self, bucket_name, region_name, aws_access_key_id, aws_secret_access_key):
+        self.bucket_name = bucket_name
+        self.region_name = region_name
+        self.aws_access_key_id = aws_access_key_id
+        self.aws_secret_access_key = aws_secret_access_key
+
+        self.envs = {
+            "AWS_ACCESS_KEY_ID": self.aws_access_key_id,
+            "AWS_SECRET_ACCESS_KEY": self.aws_secret_access_key,
+            "AWS_DEFAULT_REGION": self.region_name
+        }
+
+    def download(self, src, dst):
+        extension = os.path.splitext(src)[1]
+        if extension == "":
+            # is a directory
+            action = "sync"
+            if not os.path.exists(dst):
+                os.makedirs(dst, exist_ok=True)
+        else:
+            action = "cp"
+        src = "s3://%s/%s" % (self.bucket_name, src.lstrip('/'))
+        dst = os.path.abspath(dst)
+        log.info("download", extra={"src": src, "dst": dst})
+        aws_cli(self.envs, ['s3', action, src, dst])
+
+    def upload(self, src, dst, is_public=False):
+        src = os.path.abspath(src)
+        action = "cp" if os.path.isfile(src) else "sync"
+        dst = "s3://%s/%s" % (self.bucket_name, dst.lstrip('/'))
+        log.info("upload", extra={"src": src, "dst": dst})
+        args = ['s3', action, src, dst]
+        if is_public:
+            args = args + ['--acl', 'public-read']
+        aws_cli(self.envs, args)
+
 
 download_manager = DownloadManager(
-    bucket_name=os.environ.get("AWS_BUCKET_NAME"),
-    aws_access_key_id=os.environ.get("AWS_ACCESS_KEY"),
-    aws_secret_access_key=os.environ.get("AWS_SECRET_KEY"),
+    bucket_name="hack0820",
+    aws_access_key_id="AKIAU7XZOMYFZK54A5UD",
+    aws_secret_access_key="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",
     region_name="eu-central-1",
 )
 
@@ -94,11 +159,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='Object Detection using YOLO in OPENCV')
     parser.add_argument('--inputVideoPath', help='Path to video file.')
-    parser.add_argument('--outputFilePath', help='Path to video file.')
     args = parser.parse_args()
 
     model_path = "./model.weights"
-    if not os.path.isdir(model_path):
+    if not os.path.isfile(model_path):
         download_manager.download("/model.weights", model_path)
 
     target_path = tempfile.mkdtemp()
@@ -120,11 +184,6 @@ if __name__ == "__main__":
     net = cv.dnn.readNetFromDarknet(modelConfiguration, modelWeights)
     net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
     net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
-
-    # Process inputs
-    if not args.outputFilePath:
-        print("Output file path is not specified")
-        sys.exit(1)
 
     if not os.path.isfile(video_path):
         print("Input video file ", video_path, " doesn't exist")
