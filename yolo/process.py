@@ -128,7 +128,6 @@ def process(video_path, dst, model_path):
         if not hasFrame:
             log.info("Done processing. Output file is stored as %s" %
                      outputFile)
-            cv.waitKey(3000)
             break
 
         # Create a 4D blob from a frame.
