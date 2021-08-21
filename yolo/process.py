@@ -120,7 +120,7 @@ def process(video_path, dst, model_path):
     vid_writer = cv.VideoWriter(outputFile, cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30, (round(
         cap.get(cv.CAP_PROP_FRAME_WIDTH)), round(cap.get(cv.CAP_PROP_FRAME_HEIGHT))))  # TODO Upload
 
-    while cv.waitKey(1) < 0:
+    while True:
         # get frame from the video
         hasFrame, frame = cap.read()
 
