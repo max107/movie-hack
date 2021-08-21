@@ -106,7 +106,8 @@ def process(video_path, dst, model_path):
     inpHeight = 416  # 608     # Height of network's input image
 
     # Give the configuration and weight files for the model and load the network using them.
-    modelConfiguration = "darknet-yolov3.cfg"
+    modelConfiguration = os.path.join(os.path.dirname(
+        os.path.abspath(__file__)), "darknet-yolov3.cfg")
     outputFile = "result.avi"
 
     net = cv.dnn.readNetFromDarknet(modelConfiguration, model_path)
