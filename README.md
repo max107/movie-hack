@@ -30,10 +30,12 @@
 
 УСТАНОВКА
 ------------
-### Ветка
+### Ветка для локального тестирования
 
 - https://github.com/panichmaxim/movie-hack/tree/colab
   
+### Playbook в goole colab
+
 - Collab folder: https://drive.google.com/drive/folders/1a0PQ0mGkESKa7HVjnITMSaD4OdttuGJY?usp=sharing
 
 
