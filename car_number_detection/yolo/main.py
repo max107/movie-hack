@@ -3,10 +3,21 @@
 import cv2 as cv
 import argparse
 import sys
+import tempfile
 import numpy as np
 import os.path
+from .sync import DownloadManager
+
+download_manager = DownloadManager(
+    bucket_name=os.environ.get("AWS_BUCKET_NAME"),
+    aws_access_key_id=os.environ.get("AWS_ACCESS_KEY"),
+    aws_secret_access_key=os.environ.get("AWS_SECRET_KEY"),
+    region_name="eu-central-1",
+)
 
 # Blur https://stackoverflow.com/questions/24195138/gaussian-blurring-with-opencv-only-blurring-a-subregion-of-an-image
+
+
 def blurRegion(x, y, w, h):
     # Grab ROI with Numpy slicing and blur
     ROI = frame[y:y + h, x:x + w]
@@ -16,6 +27,8 @@ def blurRegion(x, y, w, h):
     frame[y:y + h, x:x + w] = blur
 
 # Get the names of the output layers
+
+
 def getOutputsNames(net):
     # Get the names of all the layers in the network
     layersNames = net.getLayerNames()
@@ -23,10 +36,14 @@ def getOutputsNames(net):
     return [layersNames[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 
 # Draw the predicted bounding box
+
+
 def drawPred(left, top, right, bottom):
     cv.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 3)
 
 # Remove the bounding boxes with low confidence using non-maxima suppression
+
+
 def postprocess(frame, outs):
     frameHeight = frame.shape[0]
     frameWidth = frame.shape[1]
@@ -45,7 +62,8 @@ def postprocess(frame, outs):
             # if scores[classId]>confThreshold:
             confidence = scores[classId]
             if detection[4] > confThreshold:
-                print(detection[4], " - ", scores[classId], " - th : ", confThreshold)
+                print(detection[4], " - ", scores[classId],
+                      " - th : ", confThreshold)
                 print(detection)
             if confidence > confThreshold:
                 center_x = int(detection[0] * frameWidth)
@@ -71,14 +89,21 @@ def postprocess(frame, outs):
         # drawPred(left, top, left + width, top + height)
         blurRegion(left, top, width, height)
 
-if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description='Object Detection using YOLO in OPENCV')
-    parser.add_argument('--inputVideoPath', help='Path to video file.') # TODO download
-    parser.add_argument('--outputFilePath', help='Path to video file.') # TODO upload
-    parser.add_argument('--modelPath', help='Path to image file.') # TODO download from hack0820 -> model.weights
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description='Object Detection using YOLO in OPENCV')
+    parser.add_argument('--inputVideoPath',
+                        help='Path to video file.')  # TODO download
+    parser.add_argument('--outputFilePath',
+                        help='Path to video file.')  # TODO upload
+    # TODO download from hack0820 -> model.weights
+    parser.add_argument('--modelPath', help='Path to image file.')
     parser.add_argument('--inputImagePath', help='Path to image file.')
     args = parser.parse_args()
+
+    target_path = tempfile.mkdtemp()
+    download_manager.download(args.inputVideoPath, target_path)
 
     # Initialize the parameters
     confThreshold = 0.5  # Confidence threshold
@@ -119,7 +144,7 @@ if __name__ == "__main__":
     # Get the video writer initialized to save the output video
     if args.inputVideoPath:
         vid_writer = cv.VideoWriter(outputFile, cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30, (round(
-            cap.get(cv.CAP_PROP_FRAME_WIDTH)), round(cap.get(cv.CAP_PROP_FRAME_HEIGHT)))) # TODO Upload
+            cap.get(cv.CAP_PROP_FRAME_WIDTH)), round(cap.get(cv.CAP_PROP_FRAME_HEIGHT))))  # TODO Upload
 
     while cv.waitKey(1) < 0:
 
@@ -134,7 +159,8 @@ if __name__ == "__main__":
             break
 
         # Create a 4D blob from a frame.
-        blob = cv.dnn.blobFromImage(frame, 1 / 255, (inpWidth, inpHeight), [0, 0, 0], 1, crop=False)
+        blob = cv.dnn.blobFromImage(
+            frame, 1 / 255, (inpWidth, inpHeight), [0, 0, 0], 1, crop=False)
 
         # Sets the input to the network
         net.setInput(blob)
@@ -147,7 +173,8 @@ if __name__ == "__main__":
 
         # Put efficiency information. The function getPerfProfile returns the overall time for inference(t) and the timings for each of the layers(in layersTimes)
         t, _ = net.getPerfProfile()
-        label = 'Inference time: %.2f ms' % (t * 1000.0 / cv.getTickFrequency())
+        label = 'Inference time: %.2f ms' % (
+            t * 1000.0 / cv.getTickFrequency())
 
         # Write the frame with the detection boxes
         if args.inputImagePath:
@@ -156,3 +183,4 @@ if __name__ == "__main__":
             vid_writer.write(frame.astype(np.uint8))
 
     # TODO upload to s3, local file path == outputFile
+    download_manager.upload(outputFile, "result_%s" % args.inputVideoPath)
