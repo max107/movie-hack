@@ -72,19 +72,20 @@ def postprocess(frame, outs):
         blurRegion(left, top, width, height)
 
 if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description='Object Detection using YOLO in OPENCV')
+    parser.add_argument('--inputImagePath', help='Path to image file.')
+    parser.add_argument('--inputVideoPath', help='Path to video file.') # TODO download
+    parser.add_argument('--outputFilePath', help='Path to video file.') # TODO upload
+    parser.add_argument('--modelPath', help='Path to image file.') # TODO download from hack0820 -> model.weights
+    args = parser.parse_args()
+
     # Initialize the parameters
     confThreshold = 0.5  # Confidence threshold
     nmsThreshold = 0.4  # Non-maximum suppression threshold
 
     inpWidth = 416  # 608     # Width of network's input image
     inpHeight = 416  # 608     # Height of network's input image
-
-    parser = argparse.ArgumentParser(description='Object Detection using YOLO in OPENCV')
-    parser.add_argument('--inputImagePath', help='Path to image file.')
-    parser.add_argument('--inputVideoPath', help='Path to video file.')
-    parser.add_argument('--outputFilePath', help='Path to video file.')
-    parser.add_argument('--modelPath', help='Path to image file.')
-    args = parser.parse_args()
 
     # Give the configuration and weight files for the model and load the network using them.
     modelConfiguration = "darknet-yolov3.cfg"
@@ -120,8 +121,7 @@ if __name__ == "__main__":
     # Get the video writer initialized to save the output video
     if args.inputVideoPath:
         vid_writer = cv.VideoWriter(outputFile, cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30, (round(
-            cap.get(cv.CAP_PROP_FRAME_WIDTH)), round(cap.get(cv.CAP_PROP_FRAME_HEIGHT))))
-
+            cap.get(cv.CAP_PROP_FRAME_WIDTH)), round(cap.get(cv.CAP_PROP_FRAME_HEIGHT)))) # TODO Upload
 
     while cv.waitKey(1) < 0:
 
@@ -155,4 +155,4 @@ if __name__ == "__main__":
         if args.inputImagePath:
             cv.imwrite(outputFile, frame.astype(np.uint8))
         elif args.inputVideoPath:
-            vid_writer.write(frame.astype(np.uint8))
+            vid_writer.write(frame.astype(np.uint8)) # TODO upload
