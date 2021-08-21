@@ -93,17 +93,17 @@ def postprocess(frame, outs):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='Object Detection using YOLO in OPENCV')
-    parser.add_argument('--inputVideoPath',
-                        help='Path to video file.')  # TODO download
-    parser.add_argument('--outputFilePath',
-                        help='Path to video file.')  # TODO upload
-    # TODO download from hack0820 -> model.weights
-    parser.add_argument('--modelPath', help='Path to image file.')
-    parser.add_argument('--inputImagePath', help='Path to image file.')
+    parser.add_argument('--inputVideoPath', help='Path to video file.')
+    parser.add_argument('--outputFilePath', help='Path to video file.')
     args = parser.parse_args()
+
+    model_path = "./model.weights"
+    if not os.path.isdir(model_path):
+        download_manager.download("/model.weights", model_path)
 
     target_path = tempfile.mkdtemp()
     download_manager.download(args.inputVideoPath, target_path)
+    video_path = "%s/%s" % (target_path, args.inputVideoPath)
 
     # Initialize the parameters
     confThreshold = 0.5  # Confidence threshold
@@ -114,7 +114,7 @@ if __name__ == "__main__":
 
     # Give the configuration and weight files for the model and load the network using them.
     modelConfiguration = "darknet-yolov3.cfg"
-    modelWeights = args.modelPath
+    modelWeights = model_path
     outputFile = "result.avi"
 
     net = cv.dnn.readNetFromDarknet(modelConfiguration, modelWeights)
@@ -126,25 +126,14 @@ if __name__ == "__main__":
         print("Output file path is not specified")
         sys.exit(1)
 
-    if args.inputImagePath:
-        # Open the image file
-        if not os.path.isfile(args.inputImagePath):
-            print("Input image file ", args.inputFilePath, " doesn't exist")
-            sys.exit(1)
-        cap = cv.VideoCapture(args.inputImagePath)
-    elif args.inputVideoPath:
-        if not os.path.isfile(args.inputVideoPath):
-            print("Input video file ", args.inputVideoPath, " doesn't exist")
-            sys.exit(1)
-        cap = cv.VideoCapture(args.inputVideoPath)
-    else:
-        print("No input file specified")
+    if not os.path.isfile(video_path):
+        print("Input video file ", video_path, " doesn't exist")
         sys.exit(1)
+    cap = cv.VideoCapture(video_path)
 
     # Get the video writer initialized to save the output video
-    if args.inputVideoPath:
-        vid_writer = cv.VideoWriter(outputFile, cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30, (round(
-            cap.get(cv.CAP_PROP_FRAME_WIDTH)), round(cap.get(cv.CAP_PROP_FRAME_HEIGHT))))  # TODO Upload
+    vid_writer = cv.VideoWriter(outputFile, cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30, (round(
+        cap.get(cv.CAP_PROP_FRAME_WIDTH)), round(cap.get(cv.CAP_PROP_FRAME_HEIGHT))))  # TODO Upload
 
     while cv.waitKey(1) < 0:
 
@@ -177,10 +166,6 @@ if __name__ == "__main__":
             t * 1000.0 / cv.getTickFrequency())
 
         # Write the frame with the detection boxes
-        if args.inputImagePath:
-            cv.imwrite(outputFile, frame.astype(np.uint8))
-        elif args.inputVideoPath:
-            vid_writer.write(frame.astype(np.uint8))
+        vid_writer.write(frame.astype(np.uint8))
 
-    # TODO upload to s3, local file path == outputFile
     download_manager.upload(outputFile, "result_%s" % args.inputVideoPath)
